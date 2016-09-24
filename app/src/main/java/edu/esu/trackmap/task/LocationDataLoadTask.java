@@ -23,7 +23,7 @@ import com.google.android.gms.maps.model.LatLng;
  */
 
 
-public class LocationDataLoadTask extends AsyncTask<String, String, List<LatLng>>{
+public class LocationDataLoadTask extends AsyncTask<String, String, List<List<LatLng>>>{
 
     private GoogleMap map;
     private Context applicationContext;
@@ -31,16 +31,21 @@ public class LocationDataLoadTask extends AsyncTask<String, String, List<LatLng>
     private final int latitudeIndex = 1;
     private final int longitudeIndex = 2;
 
+    private final int[] lineColorArray = {Color.BLUE, Color.RED, Color.GREEN, Color.YELLOW};
+    private final int polyLineThickness = 20;
+
     public LocationDataLoadTask(GoogleMap googleMap, Context context) {
         this.map = googleMap;
         this.applicationContext = context;
     }
 
     @Override
-    protected List<LatLng> doInBackground(String... filePath) {
-        List<LatLng> latLngList = null;
+    protected List<List<LatLng>> doInBackground(String... filePath) {
+        List<List<LatLng>> latLngMasterList = new ArrayList<>();
         try {
-            latLngList = readLocationInputStream(new InputStreamReader(applicationContext.getAssets().open("DMS.csv")));
+            for(int i = 0; i < filePath.length; i++) {
+                latLngMasterList.add(readLocationInputStream(new InputStreamReader(applicationContext.getAssets().open(filePath[i]))));
+            }
         }
         catch (FileNotFoundException ef) {
             ef.printStackTrace();
@@ -50,13 +55,18 @@ public class LocationDataLoadTask extends AsyncTask<String, String, List<LatLng>
             iof.printStackTrace();
             Toast.makeText(applicationContext, "IO Exception", Toast.LENGTH_SHORT).show();
         }
-        return latLngList;
+        return latLngMasterList;
     }
 
     @Override
-    protected void onPostExecute(List<LatLng> latLngList) {
-        LatLng[] latLngArray = latLngList.toArray(new LatLng[latLngList.size()]);
-        map.addPolyline((new PolylineOptions()).add(latLngArray).width(5).color(Color.BLUE).geodesic(false));
+    protected void onPostExecute(List<List<LatLng>> latLngMasterList) {
+        LatLng[] latLngArray = null;
+
+        for(int listIndex = 0; listIndex < latLngMasterList.size(); listIndex++) {
+            latLngArray = latLngMasterList.get(listIndex).toArray(new LatLng[latLngMasterList.get(listIndex).size()]);
+            map.addPolyline((new PolylineOptions()).add(latLngArray).width(polyLineThickness).color(lineColorArray[listIndex]).geodesic(false));
+
+        }
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngArray[0], 20));
     }
 

@@ -6,7 +6,6 @@ import android.os.Bundle;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
 
 import edu.esu.trackmap.R;
 import edu.esu.trackmap.task.LocationDataLoadTask;
@@ -15,6 +14,11 @@ import edu.esu.trackmap.task.LocationDataLoadTask;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+
+    private final String pathCSVFile = "DMS.csv";
+    private final String pathCSVFile2 = "DMS5.csv";
+    private final String pathCSVFileAvg = "DMS5-Avg.csv";
+    private final String pathCSVFileMinMax = "DMS5-MinMax.csv";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,10 +43,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        new LocationDataLoadTask(mMap, getApplicationContext()).execute();
-        // Add a marker in Sydney and move the camera
-        //mMap.addPolyline((new PolylineOptions()).add(new LatLng(41.6563, -75.1095)).width(5).color(Color.BLUE).geodesic(true));
-        // move camera to zoom on map
-        //googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(41.6563, -75.1095), 13));
+        mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+        new LocationDataLoadTask(mMap, getApplicationContext()).execute(pathCSVFile, pathCSVFile2, pathCSVFileAvg, pathCSVFileMinMax);
     }
 }
